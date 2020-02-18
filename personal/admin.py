@@ -14,6 +14,7 @@ class PersonaAdmin(admin.ModelAdmin):
         'departamento_persona',
         'provincia_persona',
         'distrito_persona',
+        'telefono',
     )
     list_display = (
         'numero_dni',
@@ -24,6 +25,7 @@ class PersonaAdmin(admin.ModelAdmin):
         'fecha_nacimiento',
         'correo',
         'imagen',
+        'telefono',
     )
 
 admin.site.register(Persona, PersonaAdmin)

@@ -6,7 +6,7 @@ import requests
 from django.conf import settings
 # Create your models here.
 from smart_selects.db_fields import ChainedForeignKey
-
+from django.core.mail import EmailMessage
 
 
 class Persona(models.Model):
@@ -19,6 +19,8 @@ class Persona(models.Model):
     correo = models.EmailField(verbose_name="Correo Electronico", null=True, blank=True)
     imagen = models.ImageField(verbose_name="Imagen de la Persona", null=True, blank=True)
     departamento_persona = models.ForeignKey('departamento', on_delete=models.CASCADE, null=True, blank=True)
+    confirmacion_correo = models.BooleanField(null=True, default=False)
+    confirmacion_wsp = models.BooleanField(null=True, default=False)
     provincia_persona = ChainedForeignKey(
         'provincia',
         chained_field="departamento_persona",
@@ -35,6 +37,8 @@ class Persona(models.Model):
         auto_choose=True,
         sort=True
     )
+    telefono = models.CharField(max_length=9, null=True, blank=True, verbose_name="Numerode telefono(Opcional)")
+
 
     def save(self, *args, **kwargs):
 
@@ -63,6 +67,18 @@ class Persona(models.Model):
         mes = settings.DICCIONARIO_MESES[numeros_fechas[1]]
         self.fecha_nacimiento = "{} de {} del {}".format(numeros_fechas[0], mes, numeros_fechas[2])
 
+
+        if self.telefono:
+            self.confirmacion_wsp = True
+        if self.correo:
+            self.confirmacion_correo = True
+        if settings.MANDAR_MENSAJES_CORREO:
+            subject = settings.ASUNTO
+            message = settings.SALUDO.format(self.nombre_persona) + settings.MENSAJE
+            email_from = settings.EMAIL_HOST_USER
+            recipient_list = [self.correo]
+            email = EmailMessage(subject, message, email_from, recipient_list)
+            email.send()
         super(Persona, self).save(*args, **kwargs)
 
 
